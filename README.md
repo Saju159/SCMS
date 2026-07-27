@@ -1,1 +1,2 @@
-# Saju-s-Chore-Management-System-SCMS
+# SCMS
+Saju's Chore Management System
