@@ -5,12 +5,13 @@ import time
 
 import viewer
 import func
+import choreman
 
 
 while True:
     func.clear()
     print("Welcome to SCMS (Saju's Chore Management System.)")
-    print("Please enter a valid option: \n1. View Your Chores.\n2. Create a new chore. \n3. Edit Chores. \n9. View Change log. \n(1=Default).")
+    print("Please enter a valid option: \n1. View Your Chores.\n2. Create or edit a chore. \n9. View Change log. \n(1=Default).")
     option=input("Option: ")
     try:
         option=int(option)
@@ -26,5 +27,8 @@ while True:
 
     if option==1:
         viewer.run()
+
+    elif option==2:
+        choreman.validate()
 
     time.sleep(1)

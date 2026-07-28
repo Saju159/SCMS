@@ -1,7 +1,11 @@
-
+import configurator
 
 
 
 def run():
-    users=func.getusers()
-    input("Enter User:")
+    users=configurator.getusers()
+    print(f"Valid options are: {users}")
+    user=input("Enter User: ")
+
+
+    
