@@ -6,6 +6,7 @@ import sqlite3
 import config
 import time
 import func
+from datetime import datetime
 
 filepath=func.masterpath
 
@@ -51,17 +52,36 @@ def getusers():
 
 
 def writeconfig(user):
+    while True:
+        deftime=input("When should the chore be done by default? (HH:MM): ")
+        try:
+            defaulttime = datetime.strptime(deftime, "%H:%M")
+            break
+        except Exception:
+            if deftime.lower()=="cancel":
+                print("Canceling...")
+                run()
+            else:
+                print("Invalid input. Try again.")
+    while True:
+        discord=input("Enter the Discord username of the user: ")
+        if discord=="":
+            print("Username cannot be empty.")
+        else:
+            break
+
+
     try:
         with sqlite3.connect(filepath) as connection:
             cursor = connection.cursor()
 
             # Insert a record into the Students table
             insert_query = '''
-            INSERT INTO Users (name)
-            VALUES (?);
+            INSERT INTO Users (name, deftime, discord)
+            VALUES (?,?,?);
             '''
 
-            data = (user,)
+            data = (user,defaulttime,discord)
 
             cursor.execute(insert_query, data)
             # Commit the changes automatically
@@ -69,6 +89,7 @@ def writeconfig(user):
         print(f"Adding user {user} to the config was successfull.")
     except Exception as e:
         print(f"Failed writing config: {e}")
+        func.delaylong()
 
 def removeconfig(user):
     try:
@@ -103,6 +124,12 @@ def run():
     if os.path.isfile(filepath):
         print("Database file found. Starting wizard...")
 
+    func.validate()
+
+    func.delay()
+    func.clear()
+
+    print("--UserMan User Manager--")
     print(f"Current users are: {getusers()}")
     print("Select option: \n1. Add new user.\n2. Remove current user.\n3. Exit")
     option=input("Option: ")

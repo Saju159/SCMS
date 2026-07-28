@@ -1,9 +1,9 @@
-import configurator
+import userman
 
 
 
 def run():
-    users=configurator.getusers()
+    users=userman.getusers()
     print(f"Valid options are: {users}")
     user=input("Enter User: ")
 

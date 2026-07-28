@@ -88,17 +88,6 @@ def new():
                 else:
                     print("Invalid input. Try again.")
 
-        while True:
-            deftime=input("Enter a default time for this chore. (HH:MM): ")
-            try:
-                finaltime = datetime.strptime(deftime, "%H:%M")
-                break
-            except Exception:
-                if days.lower()=="cancel":
-                    print("Canceling...")
-                    run()
-                else:
-                    print("Invalid input. Try again.")
         
         while True:
             usrcha=input("Change users after every completion. TRUE(1)/false(0): ").lower()
@@ -124,8 +113,6 @@ def new():
         finaldays=0
         usrchafinal=0
         finaltime=0
-
-   
 
     while True:
         nextime=input("When should the chore be done? (dd.mm.yy.HH:MM): ")
@@ -177,11 +164,11 @@ def new():
                 cursor = connection.cursor()
 
                 insert_query = '''
-                INSERT INTO Chores (name, repeat, repeatday, deftime, usrchan, nexttime, user)
-                VALUES (?, ?, ?, ?, ?, ?, ?);
+                INSERT INTO Chores (name, repeat, repeatday, usrchan, nexttime, user)
+                VALUES (?, ?, ?, ?, ?, ?);
                 '''
 
-                data = (name,repeatfinal,finaldays,finaltime,usrchafinal,nextimefinal,username)
+                data = (name,repeatfinal,finaldays,usrchafinal,nextimefinal,username)
                 print(data)
 
                 cursor.execute(insert_query, data)
@@ -205,9 +192,7 @@ def validate():
     print("Starting ChoreMan...")
     print("Validating database...")
     func.createfile()
-    if not os.path.isfile(filepath):
-        print("Database file was not found. Creating...")
-        func.createfile()
+    func.validate()
 
     if os.path.isfile(filepath):
         print("Database file found. Starting ChoreMan...")
@@ -240,4 +225,4 @@ def run():
 
 
 
-validate()
+#validate()
