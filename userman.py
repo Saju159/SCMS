@@ -36,6 +36,7 @@ def readconfig(value):
         print(f"Error while reading config: {e}")
         if "no such table" in str(e):
             func.createfile()
+        func.waituser()
 
 def getusers():
     users=readconfig("Users")
@@ -45,11 +46,17 @@ def getusers():
             string=string+users[i]
         else:
             string=string+users[i]+", "
-
+    if len(users)==0:
+        string="There are no users in the system."
 
     return string
 
-
+def checkvaliduser(user):
+    users=getusers()
+    if user in str(users):
+        return True
+    else:
+        return False
 
 def writeconfig(user):
     while True:
@@ -90,6 +97,7 @@ def writeconfig(user):
     except Exception as e:
         print(f"Failed writing config: {e}")
         func.delaylong()
+        func.waituser()
 
 def removeconfig(user):
     try:
@@ -103,6 +111,7 @@ def removeconfig(user):
         print(f"Removing user {user} was successfull.")
     except Exception as e:
         print(f"Failed removing from config: {e}")
+        func.waituser()
 
 def userquarry():
     func.delay()

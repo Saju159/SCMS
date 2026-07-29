@@ -3,6 +3,8 @@ import func
 import os
 import sqlite3
 from datetime import datetime
+import userman
+import random
 
 filepath=func.masterpath
 
@@ -19,37 +21,57 @@ def getchores():
         for row in cursor.fetchall():
             id = row[0]
             name = row[1]
-            values=values+(f"{id}, {name}\n")
-  
-            
+            values=values+(f"\n({id}). {name}")
 
+        return values
+  
     except Exception as e:
         print(f"Error while reading config: {e}")
         if "no such table" in str(e):
             func.createfile()
+        func.waituser()
+
+def validateid(id):
+    conn = sqlite3.connect(filepath)
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM Chores WHERE id = ?", (id,))
+
+    if cursor.fetchone():
+        return True
+    else:
+        return False
 
 def remove():
-    print("Chore remover")
+    print("ChoreMan Chore remover")
     print(f"Current chores in the system: {getchores()}")
-    print("Enter a chore ID to remove: ")
+    print("Enter a chore ID to remove, type cancel to cancel: ")
     while True:
-        try:
-            id=int(input("Chore ID: "))
+        id=input("Chore ID: ").lower()
+        if id=="cancel":
+            print("Canceling...")
+            func.delay()
             break
-        except Exception:
-            print("Invalid input. Try again.")
-        
-    try:
-        with sqlite3.connect(filepath) as connection:
-            cursor = connection.cursor()
-            cursor.execute(
-                "DELETE FROM Chores WHERE id = ?",
-                (id,)
-            )
-            connection.commit()
-        print(f"Removing chore {id} was successfull.")
-    except Exception as e:
-        print(f"Failed removing chore {id} from config: {e}")
+        else:
+            if validateid(id):
+                break
+            else:
+                print("Invalid input. Try again.")
+
+    if func.confirm("Are you sure you want to remove chore with id {id}?"):
+        try:
+            with sqlite3.connect(filepath) as connection:
+                cursor = connection.cursor()
+                cursor.execute(
+                    "DELETE FROM Chores WHERE id = ?",
+                    (id,)
+                )
+                connection.commit()
+            print(f"Removing chore {id} was successfull.")
+        except Exception as e:
+            print(f"Failed removing chore {id} from config: {e}")
+            func.waituser()
+    else:
+        run()
 
 def new():
     print("You can write 'cancel' any time to stop the process.")
@@ -109,15 +131,24 @@ def new():
             else:
                 print("Invalid option. Try again.")
 
+        users=userman.readconfig("Users")
+        user=random.choice(users)
+
     else:
         finaldays=0
         usrchafinal=0
-        finaltime=0
+        
+        while True:
+            user=input(f"Who will do the chore? Valid options are: {userman.getusers()}: ")
+            if userman.checkvaliduser(user):
+                break
+            else:
+                print("Invalid user. Try again.")
 
     while True:
-        nextime=input("When should the chore be done? (dd.mm.yy.HH:MM): ")
+        nextime=input("When should the chore be done? (dd.mm.yy): ")
         try:
-            nextimefinal = datetime.strptime(nextime, "%d.%m.%y.%H:%M")
+            nextimefinal = datetime.strptime(nextime, "%d.%m.%y")
             break
         except Exception:
             if nextime.lower()=="cancel":
@@ -135,12 +166,12 @@ def new():
     else:
         print("Automatic repeat enabled.")
         print(f"Chore is repeated every: {finaldays} day(s).")
-        print(f"Chore is run at {finaltime.strftime("%H:%M")} by default.")
     if usrchafinal==0:
         print("Automatic user change is disabled.")
     else:
         print("Automatic user change is enabled.")
-    print(f"This chore will be run for the next time: {nextimefinal}")
+    print(f"{user} will do the chore next.")
+    print(f"This chore will be run for the next time: {nextimefinal.strftime("%d.%m.%y")}")
 
     while True:
         print("\nDo you want to save this chore?")
@@ -159,6 +190,7 @@ def new():
             print("Invalid option. Try again.")
     
     if write==True:
+        func.validate()
         try:
             with sqlite3.connect(filepath) as connection:
                 cursor = connection.cursor()
@@ -168,7 +200,7 @@ def new():
                 VALUES (?, ?, ?, ?, ?, ?);
                 '''
 
-                data = (name,repeatfinal,finaldays,usrchafinal,nextimefinal,username)
+                data = (name,repeatfinal,finaldays,usrchafinal,nextimefinal,user)
                 print(data)
 
                 cursor.execute(insert_query, data)
@@ -184,6 +216,7 @@ def new():
             if "no column named" in str(e):
                 func.createfile()
             print(f"An error occured when writing to the database: {e}")
+            func.waituser()
 
         
 
@@ -202,7 +235,7 @@ def validate():
 
 def run():
     func.clear()
-    print(f"---ChoreMan-- \nEnter an option to continue.\nCurrent chores in the system: {getchores()} \n1. Create a new chore.\n2. Edit a chore. \n3. Remove a chore. \n4. View chore information.")
+    print(f"---ChoreMan-- Chore Editor \nEnter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore. \n4. View chore information.")
     selection=input("Option: ")
 
     if selection=="1":
@@ -211,8 +244,8 @@ def run():
         print("Chore wizard")
         new()
 
-    elif selection=="3":
-        unc.clear()
+    elif selection=="2":
+        func.clear()
         func.delay()
         remove()
         
