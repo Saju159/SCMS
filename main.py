@@ -17,7 +17,7 @@ while True:
     option=input("Option: ")
 
     if option=="1":
-        viewer.run()
+        viewman.run()
 
     elif option=="2":
         choreman.validate()

@@ -1,0 +1,2 @@
+#responsible for ensuring webhook functionality. Checks if remindman is allive by reading a variable. Sends a webhook error if something is wrong
+#simple ui for showing status. This should run in a different thread.
