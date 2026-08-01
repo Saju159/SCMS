@@ -53,7 +53,7 @@ def getusers():
 
 def checkvaliduser(user):
     users=getusers()
-    if user in str(users):
+    if user in str(users) and not user=="":
         return True
     else:
         return False

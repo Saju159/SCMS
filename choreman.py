@@ -235,7 +235,7 @@ def validate():
 
 def run():
     func.clear()
-    print(f"---ChoreMan-- Chore Editor \nEnter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore. \n4. View chore information.")
+    print(f"---ChoreMan-- Chore Editor \nEnter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n 3. to exit.")
     selection=input("Option: ")
 
     if selection=="1":
@@ -248,14 +248,11 @@ def run():
         func.clear()
         func.delay()
         remove()
+
+    elif selection=="3":
+        print("Exiting...")
+        func.delay()
         
-
-
-
-
-
-
-
-
-
-#validate()
+    else:
+        print("Invalid option. Try again.")
+        run()
