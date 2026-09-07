@@ -50,6 +50,7 @@ def remove():
         if id=="cancel":
             print("Canceling...")
             func.delay()
+            run()
             break
         else:
             if validateid(id):
