@@ -107,6 +107,36 @@ def createfile():
         print(f"Created chores table to {filepath} successfully.")
         delay()
 
+        with sqlite3.connect(filepath) as connection:
+
+            # Create a cursor object
+            cursor = connection.cursor()
+
+            # Write the SQL command to create the table
+            create_table_query = '''
+            CREATE TABLE IF NOT EXISTS History (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                repeat INTEGER,
+                repeatday INTEGER,
+                usrchan INTEGER,
+                nexttime TEXT,
+                user, TEXT,
+                completed, TEXT
+
+
+            );
+            '''
+
+            # Execute the SQL command
+            cursor.execute(create_table_query)
+
+            # Commit the changes
+            connection.commit()
+
+        print(f"Created history table to {filepath} successfully.")
+        delay()
+
     except Exception as e:
         print(f"Creating database failed: {e}")
         if not os.path.isfile(filepath):
@@ -118,29 +148,25 @@ def validate():
         createfile()
         func.delay()
 
+
+
     with sqlite3.connect(filepath) as connection:
-
-            # Create a cursor object
         cursor = connection.cursor()
-
         cursor.execute(""" SELECT name FROM sqlite_master
         WHERE type='table' AND name='Users'
         """)
-
     if not cursor.fetchone():
         print("Table Users does not exist. Creating...")
         delay()
         createfile()
 
+
+
     with sqlite3.connect(filepath) as connection:
-
-            # Create a cursor object
         cursor = connection.cursor()
-
         cursor.execute(""" SELECT name FROM sqlite_master
         WHERE type='table' AND name='Chores'
         """)
-
     if not cursor.fetchone():
         print("Table Chores does not exist. Creating...")
         delay()
@@ -148,26 +174,32 @@ def validate():
 
 
     with sqlite3.connect(filepath) as connection:
-
-            # Create a cursor object
         cursor = connection.cursor()
-        cursor.execute("PRAGMA table_info(Users)")
-        columns = [row[1] for row in cursor.fetchall()]
+        cursor.execute(""" SELECT name FROM sqlite_master
+        WHERE type='table' AND name='History'
+        """)
+    if not cursor.fetchone():
+        print("Table History does not exist. Creating...")
+        delay()
+        createfile()
 
-        if "deftime" not in columns:
-            cursor.execute("ALTER TABLE Users ADD COLUMN deftime TEXT")
-            print("Added missing deftime column to table users.")
-
-        if "discord" not in columns:
-            cursor.execute("ALTER TABLE Users ADD COLUMN discord TEXT")
-            print("Added missing discord column to table users.")
-
-        connection.commit()
 
 
     with sqlite3.connect(filepath) as connection:
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA table_info(Users)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if "deftime" not in columns:
+            cursor.execute("ALTER TABLE Users ADD COLUMN deftime TEXT")
+            print("Added missing deftime column to table users.")
+        if "discord" not in columns:
+            cursor.execute("ALTER TABLE Users ADD COLUMN discord TEXT")
+            print("Added missing discord column to table users.")
+        connection.commit()
 
-            # Create a cursor object
+
+
+    with sqlite3.connect(filepath) as connection:
         cursor = connection.cursor()
         cursor.execute("PRAGMA table_info(Chores)")
         columns = [row[1] for row in cursor.fetchall()]
@@ -202,8 +234,51 @@ def validate():
             cursor.execute("ALTER TABLE Chores ADD COLUMN user TEXT")
             print("Added missing user column to table Chores.")
             delay()
-
         connection.commit()
+
+
+    with sqlite3.connect(filepath) as connection:
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA table_info(History)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "id" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN id TEXT")
+            print("Added missing id column to table History.")
+            delay()
+
+        if "name" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN name TEXT")
+            print("Added missing name column to table History.")
+            delay()
+
+        if "repeat" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN repeat TEXT")
+            print("Added missing repeat column to table History.")
+            delay()
+        if "repeatday" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN repeatday TEXT")
+            print("Added missing repeatday column to table History.")
+            delay()
+        if "usrchan" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN usrchan TEXT")
+            print("Added missing usrchan column to table History.")
+            delay()
+        if "nexttime" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN nexttime TEXT")
+            print("Added missing nexttime column to table History.")
+            delay()
+        if "user" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN user TEXT")
+            print("Added missing user column to table History.")
+            delay()
+        if "completed" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN user TEXT")
+            print("Added missing completed column to table History.")
+            delay()
+        connection.commit()
+
+
 
 
 validate()
