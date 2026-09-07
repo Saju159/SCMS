@@ -138,7 +138,7 @@ def run():
     func.delay()
     func.clear()
 
-    print("--UserMan User Manager--")
+    func.printbold("UserMan User Manager")
     print(f"Current users are: {getusers()}")
     print("Select option: \n1. Add new user.\n2. Remove current user.\n3. Exit")
     option=input("Option: ")

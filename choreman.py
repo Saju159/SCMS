@@ -235,7 +235,8 @@ def validate():
 
 def run():
     func.clear()
-    print(f"---ChoreMan-- Chore Editor \nEnter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n 3. to exit.")
+    func.printbold("ChoreMan Chore Editor")
+    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n3. to exit.")
     selection=input("Option: ")
 
     if selection=="1":

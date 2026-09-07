@@ -41,8 +41,8 @@ def getchore(user):
 def run():
     print("Starting ViewMan...")
     func.delay()
-    func.clear()
-    print("---ViewMan--- Chore Viewer")
+    func.clear() 
+    func.printbold("ViewMan Chore Viewer")
     print("View your chores here. Press ENTER without typing anything to exit.")
     exiter=False
     
@@ -92,8 +92,4 @@ def run():
         if option=="":
             run()
         else:
-            
-    
-
-
-    
+            print("kyss")

@@ -22,6 +22,9 @@ def delaylong():
 def waituser():
     input("Program stopped. Press ENTER to continue.")
 
+def printbold(text):
+    print(f"\033[1m{text}\033[0m")
+
 def confirm(message):
     clear()
     print("Are you sure?")
