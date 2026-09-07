@@ -13,29 +13,60 @@ def getchore(user):
     SELECT *
     FROM Chores
     WHERE user = ?
-    AND ABS(julianday(nexttime) - julianday('now')) = (
-        SELECT MIN(ABS(julianday(nexttime) - julianday('now')))
-        FROM Chores
-        WHERE user = ?
-    );
-    """, (user, user))
+    ORDER BY ABS(julianday(nexttime) - julianday('now')) ASC
+    LIMIT 3;
+    """, (user,))
 
     #rows = cursor.fetchall()
     #print(rows)
 
     data=[]
-    for row in cursor.fetchall():
-        time = row[5]
-        time = datetime.strptime(time, "%Y-%m-%d 00:00:00")
-        time = time.strftime("%d.%m.%y")
-        name = row[1]
-        usid=row[0]
-        repeat=[2]
+    data2=cursor.fetchall()
 
-        data.append(f"{usid},{name},{repeat},{time}")
+    return data2
 
-    return data
+def readconfig(value):
+    try:
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
 
+        # Read one column
+        cursor.execute(f"SELECT name FROM {value}")
+
+        values=[]
+
+        for row in cursor.fetchall():
+            name = row[0]
+            values.append(name)
+            
+        return values
+
+    except Exception as e:
+        print(f"Error while reading config: {e}")
+        if "no such table" in str(e):
+            func.createfile()
+        func.waituser()
+
+def getchores():
+    chores=readconfig("Chores")
+    string=""
+    for i in range(len(chores)):
+        if i==len(chores)-1:
+            string=string+chores[i]
+        else:
+            string=string+chores[i]+", "
+    if len(chores)==0:
+        string="There are no chores in the system."
+
+    return string
+
+
+def validatechore(chore):
+    chores=getchores()
+    if chore in str(chores) and not chore=="":
+        return True
+    else:
+        return False
 
 
 def run():
@@ -69,27 +100,38 @@ def run():
 
         if len(data)==0:
             print("You do not have upcoming chores.")
+
+            input("Press ENTER to continue")
         else:
-            print("Your upcoming chore(s): ")
+            print("Your 3 closest chores: ")
 
             for i in range(len(data)):
-                data2=data[i].split(",")
-                chid=data2[0]
-                name=data2[1]
-                repeat=data2[2]
-                time=data2[3]
+                #data2=data[i].split(",")
+                chid=data[i][0]
+                name=data[i][1]
+                repeat=data[i][2]
+                time=data[i][5]
+                time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
+                time = time.strftime("%d.%m.%Y")
+
 
                 print("------------------------")
                 print(f"({chid}). {name}")
-                if repeat=="1":
+                if repeat==1:
                     print("Chore is repeating.")
                 else:
                     print("Chore is not repeating.")
                 print(f"The chore should be done: {time}")
 
-        print("-------\nWhat do you want to do?")
-        option=input("ENTER to exit or input the ID of the chore you want to mark done: ")
-        if option=="":
-            run()
-        else:
-            print("kyss")
+            print("-------\nWhat do you want to do?")
+            while True:
+                option=input("ENTER to exit or input the ID of the chore you want to mark done: ")
+                if option=="":
+                    break
+                    run()
+                else:
+                    if validatechore(chore):
+                        break
+                    else:
+                        print("Invalid Chore. Try again.")
+                        func.delay()
