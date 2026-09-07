@@ -45,12 +45,13 @@ def remove():
     print("ChoreMan Chore remover")
     print(f"Current chores in the system: {getchores()}")
     print("Enter a chore ID to remove, type cancel to cancel: ")
+    cancelled=False
     while True:
         id=input("Chore ID: ").lower()
         if id=="cancel":
             print("Canceling...")
             func.delay()
-            run()
+            cancelled=True
             break
         else:
             if validateid(id):
@@ -58,21 +59,20 @@ def remove():
             else:
                 print("Invalid input. Try again.")
 
-    if func.confirm("Are you sure you want to remove chore with id {id}?"):
-        try:
-            with sqlite3.connect(filepath) as connection:
-                cursor = connection.cursor()
-                cursor.execute(
-                    "DELETE FROM Chores WHERE id = ?",
-                    (id,)
-                )
-                connection.commit()
-            print(f"Removing chore {id} was successfull.")
-        except Exception as e:
-            print(f"Failed removing chore {id} from config: {e}")
-            func.waituser()
-    else:
-        run()
+    if not cancelled:
+        if func.confirm("Are you sure you want to remove chore with id {id}?"):
+            try:
+                with sqlite3.connect(filepath) as connection:
+                    cursor = connection.cursor()
+                    cursor.execute(
+                        "DELETE FROM Chores WHERE id = ?",
+                        (id,)
+                    )
+                    connection.commit()
+                print(f"Removing chore {id} was successfull.")
+            except Exception as e:
+                print(f"Failed removing chore {id} from config: {e}")
+                func.waituser()
 
 def createdepug(repeating):
     func.validate()
