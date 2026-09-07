@@ -128,6 +128,7 @@ def depug():
 
         elif option=="3":
             break
+            run()
 
 
 def new():
@@ -293,7 +294,7 @@ def validate():
 def run():
     func.clear()
     func.printbold("ChoreMan Chore Editor")
-    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n3. to exit.\n9. Depug tools.")
+    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n9. Depug tools.\n3. to exit.")
     selection=input("Option: ")
 
     if selection=="1":
