@@ -196,15 +196,16 @@ def info():
 def new():
     print("You can write 'cancel' any time to stop the process.")
     name=input("Enter a name for the Chore: ")
+    cancelled=False
     if name.lower()=="cancel":
         print("Canceling...")
-        run()
+        cancelled=True
     while True:
         repeat=input("Repeat this chore automatically. TRUE(1)/false(0): ").lower()
         if repeat.lower()=="cancel":
             print("Canceling...")
             break
-            run()
+            cancelled=True
         elif repeat=="true" or repeat=="1":
             repeatfinal=1
             break
@@ -217,126 +218,127 @@ def new():
             break
         else:
             print("Invalid option. Try again.")
-    if repeatfinal==1:
+    if not cancelled:
+        if repeatfinal==1:
+            while True:
+                days=input("How ofter should the chore be run (days): ")
+                try:
+                    finaldays=int(days)
+                    break
+                except Exception:
+                    if days.lower()=="cancel":
+                        print("Canceling...")
+                        run()
+                    else:
+                        print("Invalid input. Try again.")
+
+            
+            while True:
+                usrcha=input("Change users after every completion. TRUE(1)/false(0): ").lower()
+                if usrcha=="cancel":
+                    print("Canceling...")
+                    break
+                    run()
+                elif usrcha=="true" or usrcha=="1":
+                    usrchafinal=1
+                    break
+
+                elif usrcha == "false" or usrcha == "0":
+                    usrchafinal=0
+                    break
+
+                elif usrcha=="":
+                    usrchafinal=1
+                    break
+                else:
+                    print("Invalid option. Try again.")
+
+            users=userman.readconfig("Users")
+            user=random.choice(users)
+
+        else:
+            finaldays=0
+            usrchafinal=0
+            
+            while True:
+                user=input(f"Who will do the chore? Valid options are: {userman.getusers()}: ")
+                if userman.checkvaliduser(user):
+                    break
+                else:
+                    print("Invalid user. Try again.")
+
         while True:
-            days=input("How ofter should the chore be run (days): ")
+            nextime=input("When should the chore be done next? (d.m.yy): ")
             try:
-                finaldays=int(days)
+                nextimefinal = datetime.strptime(nextime, "%d.%m.%y")
                 break
             except Exception:
-                if days.lower()=="cancel":
+                if nextime.lower()=="cancel":
                     print("Canceling...")
                     run()
                 else:
                     print("Invalid input. Try again.")
 
-        
+        func.delay()
+        func.clear()
+        print("Chore information: ")
+        print(name)
+        if repeatfinal==0:
+            print("Automatic repeat is disabled.")
+        else:
+            print("Automatic repeat enabled.")
+            print(f"Chore is repeated every: {finaldays} day(s).")
+        if usrchafinal==0:
+            print("Automatic user change is disabled.")
+        else:
+            print("Automatic user change is enabled.")
+        print(f"{user} will do the chore next.")
+        print(f"This chore will be run for the next time: {nextimefinal.strftime("%d.%m.%y")}")
+
         while True:
-            usrcha=input("Change users after every completion. TRUE(1)/false(0): ").lower()
-            if usrcha=="cancel":
-                print("Canceling...")
-                break
-                run()
-            elif usrcha=="true" or usrcha=="1":
-                usrchafinal=1
+            print("\nDo you want to save this chore?")
+            confirmation=input("TRUE(1)/false(0): ").lower()
+            if confirmation=="true" or confirmation == "1":
+                write=True
                 break
 
-            elif usrcha == "false" or usrcha == "0":
-                usrchafinal=0
+            elif confirmation == "false" or confirmation == "0":
+                write=False
                 break
-
-            elif usrcha=="":
-                usrchafinal=1
+            elif confirmation == "":
+                write=True
                 break
             else:
                 print("Invalid option. Try again.")
-
-        users=userman.readconfig("Users")
-        user=random.choice(users)
-
-    else:
-        finaldays=0
-        usrchafinal=0
         
-        while True:
-            user=input(f"Who will do the chore? Valid options are: {userman.getusers()}: ")
-            if userman.checkvaliduser(user):
-                break
-            else:
-                print("Invalid user. Try again.")
+        if write==True:
+            func.validate()
+            try:
+                with sqlite3.connect(filepath) as connection:
+                    cursor = connection.cursor()
 
-    while True:
-        nextime=input("When should the chore be done next? (d.m.yy): ")
-        try:
-            nextimefinal = datetime.strptime(nextime, "%d.%m.%y")
-            break
-        except Exception:
-            if nextime.lower()=="cancel":
-                print("Canceling...")
+                    insert_query = '''
+                    INSERT INTO Chores (name, repeat, repeatday, usrchan, nexttime, user)
+                    VALUES (?, ?, ?, ?, ?, ?);
+                    '''
+
+                    data = (name,repeatfinal,finaldays,usrchafinal,nextimefinal,user)
+                    print(data)
+
+                    cursor.execute(insert_query, data)
+
+                    # Commit the changes automatically
+                    connection.commit()
+                print("Chore was written to memory successfully.")
+                func.delaylong()
                 run()
-            else:
-                print("Invalid input. Try again.")
-
-    func.delay()
-    func.clear()
-    print("Chore information: ")
-    print(name)
-    if repeatfinal==0:
-        print("Automatic repeat is disabled.")
-    else:
-        print("Automatic repeat enabled.")
-        print(f"Chore is repeated every: {finaldays} day(s).")
-    if usrchafinal==0:
-        print("Automatic user change is disabled.")
-    else:
-        print("Automatic user change is enabled.")
-    print(f"{user} will do the chore next.")
-    print(f"This chore will be run for the next time: {nextimefinal.strftime("%d.%m.%y")}")
-
-    while True:
-        print("\nDo you want to save this chore?")
-        confirmation=input("TRUE(1)/false(0): ").lower()
-        if confirmation=="true" or confirmation == "1":
-            write=True
-            break
-
-        elif confirmation == "false" or confirmation == "0":
-            write=False
-            break
-        elif confirmation == "":
-            write=True
-            break
-        else:
-            print("Invalid option. Try again.")
-    
-    if write==True:
-        func.validate()
-        try:
-            with sqlite3.connect(filepath) as connection:
-                cursor = connection.cursor()
-
-                insert_query = '''
-                INSERT INTO Chores (name, repeat, repeatday, usrchan, nexttime, user)
-                VALUES (?, ?, ?, ?, ?, ?);
-                '''
-
-                data = (name,repeatfinal,finaldays,usrchafinal,nextimefinal,user)
-                print(data)
-
-                cursor.execute(insert_query, data)
-
-                # Commit the changes automatically
-                connection.commit()
-            print("Chore was written to memory successfully.")
-            func.delaylong()
-            run()
-        except Exception as e:
-            if "no such table" in str(e):
-                func.createfile()
-            if "no column named" in str(e):
-                func.createfile()
-            print(f"An error occured when writing to the database: {e}")
-            func.waituser()
+            except Exception as e:
+                if "no such table" in str(e):
+                    func.createfile()
+                if "no column named" in str(e):
+                    func.createfile()
+                print(f"An error occured when writing to the database: {e}")
+                func.waituser()
 
         
 
