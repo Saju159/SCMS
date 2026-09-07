@@ -73,6 +73,63 @@ def remove():
     else:
         run()
 
+def createdepug(repeating):
+    func.validate()
+    if repeating:
+        repeat=1
+    else:
+        repeat=0
+    try:
+        with sqlite3.connect(filepath) as connection:
+            cursor = connection.cursor()
+
+            insert_query = '''
+            INSERT INTO Chores (name, repeat, repeatday, usrchan, nexttime, user)
+            VALUES (?, ?, ?, ?, ?, ?);
+            '''
+
+            users=userman.readconfig("Users")
+            user=random.choice(users)
+            data = ("Automatic Depug Chore",repeat,2,True,datetime.today().strftime('%d.%m.%y'),user)
+            print(data)
+
+            cursor.execute(insert_query, data)
+
+            # Commit the changes automatically
+            connection.commit()
+        print("Chore was written to memory successfully.")
+        func.delaylong()
+        run()
+    except Exception as e:
+        if "no such table" in str(e):
+            func.createfile()
+        if "no column named" in str(e):
+            func.createfile()
+        print(f"An error occured when writing to the database: {e}")
+        func.waituser()
+
+
+
+def depug():
+    func.clear()
+    func.delay()
+    func.printbold("Choreman Depug Options")
+    while True:
+        option=input("1. Create repeating chore.\n2. Create one time chore.\n3. Exit\nEnter an option to continue: ")
+        if option=="1":
+            print("Creating repeating chore...")
+            func.delay()
+            createdepug(True)
+
+        elif option=="2":
+            print("Creating one time chore...")
+            func.delay()
+            createdepug(False)
+
+        elif option=="3":
+            break
+
+
 def new():
     print("You can write 'cancel' any time to stop the process.")
     name=input("Enter a name for the Chore: ")
@@ -146,7 +203,7 @@ def new():
                 print("Invalid user. Try again.")
 
     while True:
-        nextime=input("When should the chore be done? (dd.mm.yy): ")
+        nextime=input("When should the chore be done next? (d.m.yy): ")
         try:
             nextimefinal = datetime.strptime(nextime, "%d.%m.%y")
             break
@@ -236,7 +293,7 @@ def validate():
 def run():
     func.clear()
     func.printbold("ChoreMan Chore Editor")
-    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n3. to exit.")
+    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n3. to exit.\n9. Depug tools.")
     selection=input("Option: ")
 
     if selection=="1":
@@ -252,6 +309,10 @@ def run():
 
     elif selection=="3":
         print("Exiting...")
+        func.delay()
+
+    elif selection=="9":
+        depug()
         func.delay()
         
     else:
