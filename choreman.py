@@ -90,7 +90,7 @@ def createdepug(repeating):
 
             users=userman.readconfig("Users")
             user=random.choice(users)
-            data = ("Automatic Depug Chore",repeat,2,True,datetime.today().strftime('%d.%m.%y'),user)
+            data = ("Automatic Depug Chore",repeat,2,True,datetime.today().strftime('%Y-%m-%d %H:%M:%S'),user)
             print(data)
 
             cursor.execute(insert_query, data)
@@ -130,6 +130,67 @@ def depug():
             break
             run()
 
+def readdata(id):
+    try:
+        # Connect to database
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute("SELECT * FROM Chores WHERE id = ?", (id,))
+
+        values=[]
+
+        data=cursor.fetchone()
+
+
+        name = data[1]
+        repeatfinal = data[2]
+        finaldays = data[3]
+        usrchafinal=data[4]
+        nexttime=data[5]
+        user=data[6] 
+        nextimefinal = datetime.strptime(nexttime, "%Y-%m-%d %H:%M:%S")
+
+
+    except Exception as e:
+        print(f"Reading database failed: {e}")
+        func.waituser()
+
+
+    return name,repeatfinal,finaldays,usrchafinal,user,nextimefinal
+
+def info():
+    print(f"What chore do you want to view? {getchores()}")
+    while True:
+        id=input("Enter a valid chore ID: ")
+        if validateid(id):
+            break
+        else:
+            print("Invalid id.")
+            func.delay()
+
+    name,repeatfinal,finaldays,usrchafinal,user,nextimefinal=readdata(id)
+
+    func.delay()
+    func.clear()
+
+    print("Chore information: ")
+    print(name)
+    if repeatfinal==0:
+        print("Automatic repeat is disabled.")
+    else:
+        print("Automatic repeat enabled.")
+        print(f"Chore is repeated every: {finaldays} day(s).")
+    if usrchafinal==0:
+        print("Automatic user change is disabled.")
+    else:
+        print("Automatic user change is enabled.")
+    print(f"{user} will do the chore next.")
+    print(f"This chore will be run for the next time: {nextimefinal.strftime("%d.%m.%y")}")
+
+    func.waituser()
+    run()
 
 def new():
     print("You can write 'cancel' any time to stop the process.")
@@ -294,7 +355,7 @@ def validate():
 def run():
     func.clear()
     func.printbold("ChoreMan Chore Editor")
-    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore.\n9. Depug tools.\n3. to exit.")
+    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore. \n3. View info about a chore. \n9. Depug tools.\n4. to exit.")
     selection=input("Option: ")
 
     if selection=="1":
@@ -309,6 +370,11 @@ def run():
         remove()
 
     elif selection=="3":
+        func.clear()
+        func.delay()
+        info()
+
+    elif selection=="4":
         print("Exiting...")
         func.delay()
 
