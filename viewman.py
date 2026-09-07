@@ -1,7 +1,7 @@
 import userman
 import func
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 filepath=func.masterpath
 
@@ -25,48 +25,75 @@ def getchore(user):
 
     return data2
 
-def readconfig(value):
-    try:
-        conn = sqlite3.connect(filepath)
-        cursor = conn.cursor()
-
-        # Read one column
-        cursor.execute(f"SELECT name FROM {value}")
-
-        values=[]
-
-        for row in cursor.fetchall():
-            name = row[0]
-            values.append(name)
-            
-        return values
-
-    except Exception as e:
-        print(f"Error while reading config: {e}")
-        if "no such table" in str(e):
-            func.createfile()
-        func.waituser()
-
-def getchores():
-    chores=readconfig("Chores")
-    string=""
-    for i in range(len(chores)):
-        if i==len(chores)-1:
-            string=string+chores[i]
-        else:
-            string=string+chores[i]+", "
-    if len(chores)==0:
-        string="There are no chores in the system."
-
-    return string
-
 
 def validatechore(chore):
-    chores=getchores()
-    if chore in str(chores) and not chore=="":
+    conn = sqlite3.connect(filepath)
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM Chores WHERE id = ?", (chore,))
+    result = cursor.fetchone()
+    conn.close()
+    if result is not None:
         return True
     else:
         return False
+
+
+
+def writelog():
+    print("Write to table history")
+
+def markdone(cid):
+    conn = sqlite3.connect(filepath)
+    cursor = conn.cursor()
+
+    # 2. Fetch the date and the days to add
+    cursor.execute("SELECT nexttime, repeatday, repeat FROM Chores WHERE id = ?", (cid,))
+    row = cursor.fetchone()
+
+    if row:
+        choretime, advance, repeat = row
+
+        if func.confirm(f"Are you sure you want to mark chore {cid} as done ?"):
+            if repeat==1:
+                func.delay()
+                choretime = datetime.strptime(choretime, '%Y-%m-%d %H:%M:%S')
+                new_date = choretime + timedelta(days=advance)
+                newtime = new_date.strftime('%Y-%m-%d 00:00:00')
+
+                cursor.execute("UPDATE Chores SET nexttime = ? WHERE id = ?", (newtime, cid))
+                conn.commit()
+                print("Chore completed!")
+                print(f"Moved chore: {cid} to a new date: {newtime}.")
+                func.delay()
+                func.waituser()
+                conn.close()
+
+            else:
+                func.delay()
+                try:
+                    with sqlite3.connect(filepath) as connection:
+                        cursor = connection.cursor()
+                        cursor.execute(
+                            "DELETE FROM Chores WHERE id = ?",
+                            (cid,)
+                        )
+                        connection.commit()
+                        connection.close()
+                    print(f"Removing chore {cid} was successfull.")
+                    func.delay()
+                    func.waituser()
+                except Exception as e:
+                    print(f"Failed removing chore {cid} from config: {e}")
+                    func.waituser()
+        else:
+            func.delay()
+            print("Exiting...")
+
+
+    else:
+        print("Error! Chore was not found from database.")
+        func.waituser()
+
 
 
 def run():
@@ -130,8 +157,10 @@ def run():
                     break
                     run()
                 else:
-                    if validatechore(chore):
+                    if validatechore(option):
+                        markdone(option)
                         break
+
                     else:
                         print("Invalid Chore. Try again.")
                         func.delay()

@@ -92,7 +92,7 @@ def createfile():
                 repeatday INTEGER,
                 usrchan INTEGER,
                 nexttime TEXT,
-                user, TEXT
+                user TEXT
 
 
             );
@@ -121,8 +121,8 @@ def createfile():
                 repeatday INTEGER,
                 usrchan INTEGER,
                 nexttime TEXT,
-                user, TEXT,
-                completed, TEXT
+                user TEXT,
+                completed TEXT
 
 
             );
