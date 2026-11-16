@@ -60,7 +60,7 @@ def markdone(cid):
                 conn.commit()
                 print("Chore completed!")
                 print(f"Moved chore: {cid} to a new date: {newtime}.")
-                func.writehistory(cid)
+                func.writehistory(cid,func.getchoreuser(cid))
                 func.delay()
                 func.waituser()
                 conn.close()

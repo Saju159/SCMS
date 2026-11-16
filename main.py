@@ -34,7 +34,7 @@ while True:
         print("Supervisor")
 
     elif option=="5":
-        chorehist.printhist()
+        chorehist.run()
 
     elif option=="9":
         changeman.run()

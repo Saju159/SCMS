@@ -16,48 +16,6 @@ def clear():
 
 
 
-def readconfig(value):
-    try:
-        conn = sqlite3.connect(filepath)
-        cursor = conn.cursor()
-
-        # Read one column
-        cursor.execute(f"SELECT name FROM {value}")
-
-        values=[]
-
-        for row in cursor.fetchall():
-            name = row[0]
-            values.append(name)
-            
-        return values
-
-    except Exception as e:
-        print(f"Error while reading config: {e}")
-        if "no such table" in str(e):
-            func.createfile()
-        func.waituser()
-
-def getusers():
-    users=readconfig("Users")
-    string=""
-    for i in range(len(users)):
-        if i==len(users)-1:
-            string=string+users[i]
-        else:
-            string=string+users[i]+", "
-    if len(users)==0:
-        string="There are no users in the system."
-
-    return string
-
-def checkvaliduser(user):
-    users=getusers()
-    if user in str(users) and not user=="":
-        return True
-    else:
-        return False
-
 def writeconfig(user):
     while True:
         deftime=input("When should the chore be done by default? (HH:MM): ")
@@ -115,14 +73,33 @@ def removeconfig(user):
 
 def userquarry():
     func.delay()
-    name=input("Enter a username. Type cancel to cancel: ").lower()
-    if name=="cancel":
-        print("Canceling...")
-        func.delay()
-        clear()
-        return ""
-    else:
-        return name
+    while True:
+        name=input("Enter a username. Type cancel to cancel: ").lower()
+        if name=="cancel":
+            print("Canceling...")
+            func.delay()
+            clear()
+            return ""
+        else:
+            if func.checkvaliduser(name):
+                return name
+            else:
+                print("Invalid username, try again.")
+                func.delay()
+
+def newuserquarry():
+    func.delay()
+    while True:
+        name=input("Enter a username. Type cancel to cancel: ").lower()
+        if name=="cancel":
+            print("Canceling...")
+            func.delay()
+            clear()
+            return ""
+        elif name.strip()=="":
+            print("Username cannot be empty")
+        else:
+            return name
 
 def run():
     clear()
@@ -139,7 +116,7 @@ def run():
     func.clear()
 
     func.printbold("UserMan User Manager")
-    print(f"Current users are: {getusers()}")
+    print(f"Current users are: {func.getusers()}")
     print("Select option: \n1. Add new user.\n2. Remove current user.\n3. Exit")
     option=input("Option: ")
 
@@ -147,7 +124,7 @@ def run():
     if option=="1":
         clear()
         print("Adding new user...")
-        user=userquarry()
+        user=newuserquarry()
         if not user=="":
             writeconfig(user)
         func.delay()
@@ -158,7 +135,7 @@ def run():
     elif option=="2":
         clear()
         print("Removing user...")
-        print(f"Current users are: {getusers()}")
+        print(f"Current users are: {func.getusers()}")
         user=userquarry()
         if not user=="":
             removeconfig(user)

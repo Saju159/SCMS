@@ -8,15 +8,7 @@ import random
 
 filepath=func.masterpath
 
-def validateid(id):
-    conn = sqlite3.connect(filepath)
-    cursor = conn.cursor()
-    cursor.execute("SELECT 1 FROM Chores WHERE id = ?", (id,))
 
-    if cursor.fetchone():
-        return True
-    else:
-        return False
 
 def remove():
     print("ChoreMan Chore remover")
@@ -31,7 +23,7 @@ def remove():
             cancelled=True
             break
         else:
-            if validateid(id):
+            if func.validateid(id):
                 break
             else:
                 print("Invalid input. Try again.")
@@ -142,7 +134,7 @@ def info():
     print(f"What chore do you want to view? {func.getchores()}")
     while True:
         id=input("Enter a valid chore ID: ")
-        if validateid(id):
+        if func.validateid(id):
             break
         else:
             print("Invalid id.")

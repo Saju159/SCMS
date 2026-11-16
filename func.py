@@ -3,6 +3,9 @@ import sqlite3
 import config
 import os 
 import time
+from datetime import datetime
+
+import requests
 
 
 masterpath=os.path.join(config.getBaseConfigDir(),"scms.db")
@@ -11,13 +14,11 @@ filepath=masterpath
 def clear():
     os.system('cls' if os.name == 'nt' else "printf '\033c'")
 
-
 def delay():
     time.sleep(0.5)
 
 def delaylong():
     time.sleep(3)
-
 
 def waituser():
     input("Program stopped. Press ENTER to continue.")
@@ -49,6 +50,48 @@ def confirm(message):
     else:
         return False
 
+def readconfig(value):
+    try:
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute(f"SELECT name FROM {value}")
+
+        values=[]
+
+        for row in cursor.fetchall():
+            name = row[0]
+            values.append(name)
+            
+        return values
+
+    except Exception as e:
+        print(f"Error while reading config: {e}")
+        if "no such table" in str(e):
+            func.createfile()
+        func.waituser()
+
+def getusers():
+    users=readconfig("Users")
+    string=""
+    for i in range(len(users)):
+        if i==len(users)-1:
+            string=string+users[i]
+        else:
+            string=string+users[i]+", "
+    if len(users)==0:
+        string="There are no users in the system."
+
+    return string
+
+def checkvaliduser(user):
+    users=getusers()
+    if user in str(users) and not user=="":
+        return True
+    else:
+        return False
+
 def getchores():
     try:
         conn = sqlite3.connect(filepath)
@@ -69,13 +112,135 @@ def getchores():
     except Exception as e:
         print(f"Error while reading config: {e}")
         if "no such table" in str(e):
-            func.createfile()
-        func.waituser()
+            createfile()
+        waituser()
+
+def validateid(cid):
+    conn = sqlite3.connect(filepath)
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM Chores WHERE id = ?", (cid,))
+
+    if cursor.fetchone():
+        return True
+    else:
+        return False
+
+def getchorename(cid):
+    try:
+        # Connect to database
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute("SELECT * FROM Chores WHERE id = ?", (cid,))
+
+        values=[]
+
+        data=cursor.fetchone()
+
+        name = data[1]
 
 
-def writehistory(chore_id):
-    print(f"Current chores in the system: {func.getchores()}")
+    except Exception as e:
+        raise
+        print(f"Reading database failed: {e}")
+        waituser()
 
+    return name
+
+def getchoreuser(id):
+    try:
+        # Connect to database
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute("SELECT * FROM Chores WHERE id = ?", (id,))
+
+        values=[]
+
+        data=cursor.fetchone()
+
+        user = data[6]
+
+
+    except Exception as e:
+        print(f"Reading database failed: {e}")
+        waituser()
+
+    return user
+
+def getdiscord(name):
+    try:
+        # Connect to database
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute("SELECT * FROM Users WHERE name = ?", (name,))
+
+        values=[]
+
+        data=cursor.fetchone()
+        discord = data[2]
+
+    except Exception as e:
+        print(f"Reading database failed: {e}")
+        waituser()
+
+    return discord
+
+def getwebhookurl():
+    if checkvaliduser("log-bot"):
+        url=getdiscord("log-bot")
+        return url
+    else:
+        print("User 'log-bot' not found.")
+        return None
+    
+def writehistory(chore_id,user):
+    validate()
+    name=getchorename(chore_id)
+    try:
+        with sqlite3.connect(filepath) as connection:
+            cursor = connection.cursor()
+
+            insert_query = '''
+            INSERT INTO History (chore_id, name, description, user, completed)
+            VALUES (?, ?, ?, ?, ?);
+            '''
+            data = (chore_id,name,"Description",user,datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+
+            cursor.execute(insert_query, data)
+
+            # Commit the changes automatically
+            connection.commit()
+        print("Chore was written to history successfully.")
+
+        data=f"User {user} completed chore: ({chore_id}). {name}. @saju."
+        url=getwebhookurl()
+        if url:
+            response = requests.post(url, json=data)
+
+            if response.status_code == 204:
+                print("Discord log sent successfully!")
+            else:
+                print(f"Failed to send discord log: {response.status_code}")
+                print(f"With URL: '{url}'")
+                waituser()
+        else:
+            print("Could not get Discord bot URL.")
+            waituser()
+
+        delaylong()
+        run()
+    except Exception as e:
+        if "no such table" in str(e):
+            createfile()
+        if "no column named" in str(e):
+            createfile()
+        print(f"An error occured when writing to the database: {e}")
+        waituser()
 
 def createfile():
     print("Creating file...")
@@ -143,11 +308,9 @@ def createfile():
             create_table_query = '''
             CREATE TABLE IF NOT EXISTS History (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chore_id INTEGER,
                 name TEXT,
-                repeat INTEGER,
-                repeatday INTEGER,
-                usrchan INTEGER,
-                nexttime TEXT,
+                description TEXT,
                 user TEXT,
                 completed TEXT
 
@@ -173,7 +336,7 @@ def validate():
     if not os.path.isfile(filepath):
         print("Database file was not found. Creating...")
         createfile()
-        func.delay()
+        delay()
 
 
 
@@ -263,15 +426,19 @@ def validate():
             delay()
         connection.commit()
 
-
     with sqlite3.connect(filepath) as connection:
         cursor = connection.cursor()
         cursor.execute("PRAGMA table_info(History)")
         columns = [row[1] for row in cursor.fetchall()]
 
         if "id" not in columns:
-            cursor.execute("ALTER TABLE History ADD COLUMN id TEXT")
+            cursor.execute("ALTER TABLE History ADD COLUMN id INTEGER PRIMARY KEY AUTOINCREMENT")
             print("Added missing id column to table History.")
+            delay()
+
+        if "chore_id" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN chore_id INTEGER")
+            print("Added missing chore_id column to table History.")
             delay()
 
         if "name" not in columns:
@@ -279,33 +446,21 @@ def validate():
             print("Added missing name column to table History.")
             delay()
 
-        if "repeat" not in columns:
-            cursor.execute("ALTER TABLE History ADD COLUMN repeat TEXT")
-            print("Added missing repeat column to table History.")
+        if "description" not in columns:
+            cursor.execute("ALTER TABLE History ADD COLUMN description TEXT")
+            print("Added missing description column to table History.")
             delay()
-        if "repeatday" not in columns:
-            cursor.execute("ALTER TABLE History ADD COLUMN repeatday TEXT")
-            print("Added missing repeatday column to table History.")
-            delay()
-        if "usrchan" not in columns:
-            cursor.execute("ALTER TABLE History ADD COLUMN usrchan TEXT")
-            print("Added missing usrchan column to table History.")
-            delay()
-        if "nexttime" not in columns:
-            cursor.execute("ALTER TABLE History ADD COLUMN nexttime TEXT")
-            print("Added missing nexttime column to table History.")
-            delay()
+
         if "user" not in columns:
             cursor.execute("ALTER TABLE History ADD COLUMN user TEXT")
             print("Added missing user column to table History.")
             delay()
+
         if "completed" not in columns:
             cursor.execute("ALTER TABLE History ADD COLUMN user TEXT")
             print("Added missing completed column to table History.")
             delay()
         connection.commit()
-
-
 
 
 validate()
