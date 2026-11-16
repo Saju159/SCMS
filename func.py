@@ -49,6 +49,33 @@ def confirm(message):
     else:
         return False
 
+def getchores():
+    try:
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute(f"SELECT id, name FROM Chores")
+
+        values=""
+
+        for row in cursor.fetchall():
+            id = row[0]
+            name = row[1]
+            values=values+(f"\n({id}). {name}")
+
+        return values
+  
+    except Exception as e:
+        print(f"Error while reading config: {e}")
+        if "no such table" in str(e):
+            func.createfile()
+        func.waituser()
+
+
+def writehistory(chore_id):
+    print(f"Current chores in the system: {func.getchores()}")
+
 
 def createfile():
     print("Creating file...")

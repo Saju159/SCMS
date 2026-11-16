@@ -8,18 +8,20 @@ import func
 import userman
 import choreman
 import changeman
+import chorehist
 
 
 while True:
     func.clear()
+    func.printbold("Main Menu")
     print("Welcome to SCMS (Saju's Chore Management System.)")
     print("Be ware of the Supervisor. ( ఠ ͟ʖ ఠ)")
-    if True:
+    if False:
         print("------\nWARNING! The Supervisor has a message!\n------")
-    print("Please enter a valid option: \n1. View/complete Your Chores.\n2. Create, edit or view info of a chore.\n3. Create/edit users.\n4. Supervisor\n9. View Change log. \n(1=Default).")
+    print("Please enter a valid option: \n1. View/complete Your Chores.\n2. Create, edit or view info of a chore.\n3. Create/edit users.\n4. Supervisor\n5. Chore Logger\n9. View Change log. \n(1=Default).")
     option=input("Option: ")
 
-    if option=="1":
+    if option=="1" or option.strip()=="":
         viewman.run()
 
     elif option=="2":
@@ -30,6 +32,9 @@ while True:
 
     elif option=="4":
         print("Supervisor")
+
+    elif option=="5":
+        chorehist.printhist()
 
     elif option=="9":
         changeman.run()

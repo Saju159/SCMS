@@ -8,29 +8,6 @@ import random
 
 filepath=func.masterpath
 
-def getchores():
-    try:
-        conn = sqlite3.connect(filepath)
-        cursor = conn.cursor()
-
-        # Read one column
-        cursor.execute(f"SELECT id, name FROM Chores")
-
-        values=""
-
-        for row in cursor.fetchall():
-            id = row[0]
-            name = row[1]
-            values=values+(f"\n({id}). {name}")
-
-        return values
-  
-    except Exception as e:
-        print(f"Error while reading config: {e}")
-        if "no such table" in str(e):
-            func.createfile()
-        func.waituser()
-
 def validateid(id):
     conn = sqlite3.connect(filepath)
     cursor = conn.cursor()
@@ -43,7 +20,7 @@ def validateid(id):
 
 def remove():
     print("ChoreMan Chore remover")
-    print(f"Current chores in the system: {getchores()}")
+    print(f"Current chores in the system: {func.getchores()}")
     print("Enter a chore ID to remove, type cancel to cancel: ")
     cancelled=False
     while True:
@@ -162,7 +139,7 @@ def readdata(id):
     return name,repeatfinal,finaldays,usrchafinal,user,nextimefinal
 
 def info():
-    print(f"What chore do you want to view? {getchores()}")
+    print(f"What chore do you want to view? {func.getchores()}")
     while True:
         id=input("Enter a valid chore ID: ")
         if validateid(id):
@@ -358,7 +335,7 @@ def validate():
 def run():
     func.clear()
     func.printbold("ChoreMan Chore Editor")
-    print(f"Enter an option to continue.\nCurrent chores in the system: {getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore. \n3. View info about a chore. \n9. Depug tools.\n4. to exit.")
+    print(f"Enter an option to continue.\nCurrent chores in the system: {func.getchores()} \n---------------\n1. Create a new chore.\n2. Remove a chore. \n3. View info about a chore. \n9. Depug tools.\n4. to exit.")
     selection=input("Option: ")
 
     if selection=="1":

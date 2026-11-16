@@ -38,10 +38,6 @@ def validatechore(chore):
         return False
 
 
-
-def writelog():
-    print("Write to table history")
-
 def markdone(cid):
     conn = sqlite3.connect(filepath)
     cursor = conn.cursor()
@@ -64,6 +60,7 @@ def markdone(cid):
                 conn.commit()
                 print("Chore completed!")
                 print(f"Moved chore: {cid} to a new date: {newtime}.")
+                func.writehistory(cid)
                 func.delay()
                 func.waituser()
                 conn.close()
