@@ -2,7 +2,13 @@
 
 import userman
 import func
+import os
+import config
+import sqlite3
 
+
+masterpath=os.path.join(config.getBaseConfigDir(),"scms.db")
+filepath=masterpath
 
 def writehistquarry():
     print(f"Current chores in the system: {func.getchores()}")
@@ -35,7 +41,29 @@ def writehistquarry():
             func.delaylong()
 
 def printhist():
-    print("")
+    try:
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute(f"SELECT id, chore_id, name, user, completed FROM History")
+
+        for row in cursor.fetchall():
+            hid = row[0]
+            cid = row[1]
+            name = row[2]
+            user = row[3]
+            completed = row[4]
+
+            print(f"({hid}). Chore ID: {cid}, {name}, completed by '{user}', completed '{completed}'")
+
+        func.waituser()
+  
+    except Exception as e:
+        print(f"Error while reading config: {e}")
+        if "no such table" in str(e):
+            createfile()
+        func.waituser()
 
 
 def run():
