@@ -57,7 +57,7 @@ def createdepug(repeating):
             VALUES (?, ?, ?, ?, ?, ?);
             '''
 
-            users=func.readconfig("Users")
+            users=func.readusers()
             user=random.choice(users)
             data = ("Automatic Depug Chore",repeat,2,True,datetime.today().strftime('%Y-%m-%d %H:%M:%S'),user)
             print(data)
@@ -221,7 +221,7 @@ def new():
                 else:
                     print("Invalid option. Try again.")
 
-            users=func.readconfig("Users")
+            users=func.readusers()
             user=random.choice(users)
 
         else:

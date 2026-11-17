@@ -72,7 +72,33 @@ def readconfig(value):
             func.createfile()
         func.waituser()
 
-def getusers():
+def readusers(showall): # return every user that is not hidden as a list
+    try:
+        conn = sqlite3.connect(filepath)
+        cursor = conn.cursor()
+
+        # Read one column
+        cursor.execute(f"SELECT name, hidden FROM Users")
+
+        values=[]
+
+        for row in cursor.fetchall():
+            name = row[0]
+            hidden = row[1]
+            if hidden=="1":
+                name=f"{name} (Hidden)"
+            if showall or hidden!="1":
+                values.append(name)
+            
+        return values
+
+    except Exception as e:
+        print(f"Error while reading config: {e}")
+        if "no such table" in str(e):
+            func.createfile()
+        func.waituser()
+
+def getusers(): # lists every user in a string
     users=readconfig("Users")
     string=""
     for i in range(len(users)):
@@ -254,8 +280,8 @@ def createfile():
             CREATE TABLE IF NOT EXISTS Users (
                 name TEXT,
                 deftime TEXT,
-                discord TEXT
-
+                discord TEXT,
+                hidden INTEGER
             );
             '''
 
@@ -384,6 +410,9 @@ def validate():
         if "discord" not in columns:
             cursor.execute("ALTER TABLE Users ADD COLUMN discord TEXT")
             print("Added missing discord column to table users.")
+        if "hidden" not in columns:
+            cursor.execute("ALTER TABLE Users ADD COLUMN hidden INTEGER")
+            print("Added missing hidden column to table users.")
         connection.commit()
 
 

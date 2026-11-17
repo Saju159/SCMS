@@ -35,6 +35,16 @@ def writeconfig(user):
         else:
             break
 
+    while True:
+        hidden=input("Should the user be hidden? TRUE=1/false=0: ")
+        if hidden.strip()=="":
+            hidden=0
+        if hidden!="0" and hidden!="1":
+            print("Username cannot be empty.")
+        else:
+            hidden=int(hidden)
+            break
+
 
     try:
         with sqlite3.connect(filepath) as connection:
@@ -42,11 +52,11 @@ def writeconfig(user):
 
             # Insert a record into the Students table
             insert_query = '''
-            INSERT INTO Users (name, deftime, discord)
+            INSERT INTO Users (name, deftime, discord, hidden)
             VALUES (?,?,?);
             '''
 
-            data = (user,defaulttime,discord)
+            data = (user,defaulttime,discord,hidden)
 
             cursor.execute(insert_query, data)
             # Commit the changes automatically
@@ -116,7 +126,13 @@ def run():
     func.clear()
 
     func.printbold("UserMan User Manager")
-    print(f"Current users are: {func.getusers()}")
+    userlist=func.readusers(True)
+    string=""
+
+    for i in userlist:
+        string=f"{string}\n{i}"
+
+    print(f"Current users are: {string}")
     print("Select option: \n1. Add new user.\n2. Remove current user.\n3. Exit")
     option=input("Option: ")
 
