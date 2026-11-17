@@ -217,7 +217,7 @@ def writehistory(chore_id,user):
             connection.commit()
         print("Chore was written to history successfully.")
 
-        data=f"User {user} completed chore: ({chore_id}). {name}. @saju."
+        data = {"content": f"User '{user}' completed chore: '({chore_id}). {name}'. @everyone."}
         url=getwebhookurl()
         if url:
             response = requests.post(url, json=data)
@@ -233,7 +233,6 @@ def writehistory(chore_id,user):
             waituser()
 
         delaylong()
-        run()
     except Exception as e:
         if "no such table" in str(e):
             createfile()

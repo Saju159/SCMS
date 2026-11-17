@@ -23,15 +23,16 @@ def writehistquarry():
             else:
                 print("Invalid input. Try again.")
 
-    print("\nEnter a user for you want to add this chore for:")
-    print(f"Users in the system are: {func.getusers()}")
-    name=userman.userquarry()
+    if not cancelled:
+        print("\nEnter a user for you want to add this chore for:")
+        print(f"Users in the system are: {func.getusers()}")
+        name=userman.userquarry()
 
-    if not cancelled and not name.strip()=="" and func.confirm(f"You want to write chore ID: '{cid}' named: '{func.getchorename(cid)}' for user '{name}' to memory?"):
-        func.writehistory(cid,name)
-    else:
-        print("Canceled")
-        func.delaylong()
+        if not cancelled and not name.strip()=="" and func.confirm(f"You want to write chore ID: '{cid}' named: '{func.getchorename(cid)}' for user '{name}' to memory?"):
+            func.writehistory(cid,name)
+        else:
+            print("Canceled...")
+            func.delaylong()
 
 def printhist():
     print("")

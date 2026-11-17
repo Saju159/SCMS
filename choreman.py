@@ -3,7 +3,6 @@ import func
 import os
 import sqlite3
 from datetime import datetime
-import userman
 import random
 
 filepath=func.masterpath
@@ -58,7 +57,7 @@ def createdepug(repeating):
             VALUES (?, ?, ?, ?, ?, ?);
             '''
 
-            users=userman.readconfig("Users")
+            users=func.readconfig("Users")
             user=random.choice(users)
             data = ("Automatic Depug Chore",repeat,2,True,datetime.today().strftime('%Y-%m-%d %H:%M:%S'),user)
             print(data)
@@ -169,7 +168,7 @@ def new():
     if name.lower()=="cancel":
         print("Canceling...")
         cancelled=True
-    while True:
+    while True and not cancelled:
         repeat=input("Repeat this chore automatically. TRUE(1)/false(0): ").lower()
         if repeat.lower()=="cancel":
             print("Canceling...")
@@ -222,7 +221,7 @@ def new():
                 else:
                     print("Invalid option. Try again.")
 
-            users=userman.readconfig("Users")
+            users=func.readconfig("Users")
             user=random.choice(users)
 
         else:
@@ -230,13 +229,13 @@ def new():
             usrchafinal=0
             
             while True:
-                user=input(f"Who will do the chore? Valid options are: {userman.getusers()}: ")
-                if userman.checkvaliduser(user):
+                user=input(f"Who will do the chore? Valid options are: {func.getusers()}: ")
+                if func.checkvaliduser(user):
                     break
                 else:
                     print("Invalid user. Try again.")
 
-        while True:
+        while True and not cancelled:
             nextime=input("When should the chore be done next? (d.m.yy): ")
             try:
                 nextimefinal = datetime.strptime(nextime, "%d.%m.%y")
@@ -349,6 +348,7 @@ def run():
     elif selection=="4":
         print("Exiting...")
         func.delay()
+        return
 
     elif selection=="9":
         depug()
